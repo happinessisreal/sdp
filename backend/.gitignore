@@ -1,0 +1,16 @@
+# deps
+node_modules/
+# Prisma
+*.db
+*.db-journal
+
+# Next.js / framework generated
+.next
+.nuxt
+out
+build
+
+# Misc
+.DS_Store
+.vscode
+coverage

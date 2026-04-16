@@ -1,0 +1,99 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  role       String   // "ADMIN", "TEACHER", or "STUDENT"
+  created_at DateTime @default(now())
+  student    Student?
+  teacher    Teacher?
+
+  @@map("users")
+}
+
+model Student {
+  id              Int          @id @default(autoincrement())
+  user_id         Int          @unique
+  user            User         @relation(fields: [user_id], references: [id])
+  enrollment_date DateTime     
+  attendances     Attendance[]
+  payments        Payment[]
+  enrollments     Enrollment[]
+
+  @@map("students")
+}
+
+model Teacher {
+  id       Int       @id @default(autoincrement())
+  user_id  Int       @unique
+  user     User      @relation(fields: [user_id], references: [id])
+  classes  Class[]
+  payments Payment[]
+
+  @@map("teachers")
+}
+
+model Class {
+  id                    Int          @id @default(autoincrement())
+  teacher_id            Int
+  teacher               Teacher      @relation(fields: [teacher_id], references: [id])
+  name                  String
+  date                  DateTime?    
+  start_time            DateTime?    
+  number_of_days_a_week Int?   
+  attendances           Attendance[]
+  payments              Payment[]
+  enrollments           Enrollment[]
+
+  @@map("classes")
+}
+
+model Enrollment {
+  id          Int      @id @default(autoincrement())
+  student_id  Int
+  student     Student  @relation(fields: [student_id], references: [id])
+  class_id    Int
+  class       Class    @relation(fields: [class_id], references: [id])
+  enrolled_at DateTime @default(now())
+
+  @@unique([student_id, class_id])
+  @@map("enrollments")
+}
+
+model Attendance {
+  id         Int      @id @default(autoincrement())
+  student_id Int
+  student    Student  @relation(fields: [student_id], references: [id])
+  class_id   Int
+  class      Class    @relation(fields: [class_id], references: [id])
+  date       DateTime         
+  status     String   // "PRESENT", "ABSENT", or "LATE"
+
+  @@map("attendance")
+}
+
+model Payment {
+  id           Int       @id @default(autoincrement())
+  student_id   Int
+  student      Student   @relation(fields: [student_id], references: [id])
+  teacher_id   Int
+  teacher      Teacher   @relation(fields: [teacher_id], references: [id])
+  class_id     Int
+  class        Class     @relation(fields: [class_id], references: [id])
+  amount       Float         
+  status       String    // "PAID", "PENDING", or "OVERDUE"
+  due_date     DateTime      
+  payment_date DateTime?     
+
+  @@map("payments")
+}

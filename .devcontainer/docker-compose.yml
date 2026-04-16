@@ -1,0 +1,24 @@
+services:
+  app:
+    build: .
+    volumes:
+      # Use the project name as a subfolder to prevent "Workspace does not exist"
+      - ..:/workspaces/sdp:cached 
+    depends_on:
+      - db
+    command: sleep infinity
+
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: tuition_admin
+      POSTGRES_PASSWORD: tuition_password
+      POSTGRES_DB: tuition_track_db
+    ports:
+      - "5460:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
