@@ -1,16 +1,18 @@
-# deps
+# Dependencies
 node_modules/
-# Prisma
+
+# Environment
+.env
+.env.local
+
+# SQLite database
+prisma/dev.db
+prisma/dev.db-journal
 *.db
 *.db-journal
 
-# Next.js / framework generated
-.next
-.nuxt
-out
-build
+# Build
+dist/
 
-# Misc
-.DS_Store
-.vscode
-coverage
+# Logs
+*.log
