@@ -44,9 +44,9 @@ export function Sidebar() {
   const navItems = getNavItems();
 
   return (
-    <div className="flex h-full w-64 flex-col bg-surface-950 text-white">
-      <div className="flex h-16 items-center px-6 border-b border-surface-800">
-        <h1 className="text-xl font-bold text-white tracking-tight">Tuition Track</h1>
+    <div className="flex h-full w-20 flex-col bg-surface-950 text-white lg:w-64">
+      <div className="flex h-16 items-center justify-center border-b border-surface-800 px-4 lg:justify-start lg:px-6">
+        <h1 className="text-center text-sm font-bold text-white tracking-tight lg:text-xl">Tuition<span className="hidden lg:inline"> Track</span></h1>
       </div>
       
       <div className="flex-1 overflow-y-auto py-6">
@@ -55,28 +55,29 @@ export function Sidebar() {
             <NavLink
               key={item.name}
               to={item.href}
+              title={item.name}
               className={({ isActive }) =>
                 cn(
-                  "group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                  "group flex items-center justify-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors lg:justify-start",
                   isActive
                     ? "bg-primary-600 text-white"
                     : "text-surface-300 hover:bg-surface-800 hover:text-white"
                 )
               }
             >
-              <item.icon className="mr-3 h-5 w-5 flex-shrink-0" aria-hidden="true" />
-              {item.name}
+              <item.icon className="h-5 w-5 flex-shrink-0 lg:mr-3" aria-hidden="true" />
+              <span className="hidden lg:inline">{item.name}</span>
             </NavLink>
           ))}
         </nav>
       </div>
 
-      <div className="border-t border-surface-800 p-4">
-        <div className="flex items-center mb-4">
+      <div className="border-t border-surface-800 p-3 lg:p-4">
+        <div className="mb-4 flex items-center justify-center lg:justify-start">
           <div className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-bold text-lg">
             {user?.name.charAt(0).toUpperCase()}
           </div>
-          <div className="ml-3 truncate">
+          <div className="ml-3 hidden truncate lg:block">
             <p className="text-sm font-medium text-white truncate">{user?.name}</p>
             <p className="text-xs text-surface-500 capitalize">{user?.role.toLowerCase()}</p>
           </div>
@@ -84,10 +85,11 @@ export function Sidebar() {
         
         <button
           onClick={logout}
-          className="flex w-full items-center rounded-md px-3 py-2 text-sm font-medium text-surface-300 hover:bg-surface-800 hover:text-white transition-colors"
+          title="Sign out"
+          className="flex w-full items-center justify-center rounded-md px-3 py-2 text-sm font-medium text-surface-300 transition-colors hover:bg-surface-800 hover:text-white lg:justify-start"
         >
-          <LogOut className="mr-3 h-5 w-5" />
-          Sign out
+          <LogOut className="h-5 w-5 lg:mr-3" />
+          <span className="hidden lg:inline">Sign out</span>
         </button>
       </div>
     </div>

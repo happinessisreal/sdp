@@ -1,7 +1,55 @@
 import { prisma } from "../db/index.js";
-import { NotFoundError } from "../utils/errors.js";
+import { hashPassword } from "../utils/password.js";
+import { ConflictError, NotFoundError } from "../utils/errors.js";
+import type { CreateStudentInput } from "../validators/student.validator.js";
 
 export class StudentService {
+  async create(data: CreateStudentInput) {
+    const existing = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (existing) {
+      throw new ConflictError("A user with this email already exists");
+    }
+
+    const hashedPassword = await hashPassword(data.password);
+
+    return prisma.user.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        password: hashedPassword,
+        role: "STUDENT",
+        student: {
+          create: {
+            enrollment_date: data.enrollment_date
+              ? new Date(data.enrollment_date)
+              : new Date(),
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        created_at: true,
+        student: {
+          include: {
+            _count: {
+              select: {
+                enrollments: true,
+                attendances: true,
+                payments: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   /**
    * List all students with pagination and optional search.
    */

@@ -1,7 +1,10 @@
 {
   "name": "backend",
   "scripts": {
-    "dev": "bun run --hot src/index.ts"
+    "dev": "bun run --hot src/index.ts",
+    "db:generate": "prisma generate",
+    "db:seed": "bun prisma/seed.ts",
+    "typecheck": "bunx tsc --noEmit"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.6",

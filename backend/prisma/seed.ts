@@ -36,8 +36,8 @@ async function main() {
 
   const teacher1 = await prisma.user.create({
     data: {
-      name: "Iyolita Islam",
-      email: "iyolita@tuitiontrack.com",
+      name: "Demo Teacher",
+      email: "teacher@tuitiontrack.com",
       password: teacherPassword,
       role: "TEACHER",
       teacher: { create: {} },
@@ -62,6 +62,7 @@ async function main() {
   // ─── Create Students ──────────────────────────────────────────
   const studentPassword = await Bun.password.hash("student123", { algorithm: "bcrypt", cost: 10 });
   const studentNames = [
+    { name: "Demo Student", email: "student@tuitiontrack.com" },
     { name: "Faiza Mustari", email: "faiza@student.com" },
     { name: "Zarin Tasnim Tuly", email: "tuly@student.com" },
     { name: "Alvee Ahnaf", email: "alvee@student.com" },
@@ -130,7 +131,7 @@ async function main() {
   }
 
   // Enroll last 3 in class3
-  for (let i = 2; i < 5; i++) {
+  for (let i = students.length - 3; i < students.length; i++) {
     await prisma.enrollment.create({
       data: { student_id: students[i]!.student!.id, class_id: class3.id },
     });
@@ -161,7 +162,7 @@ async function main() {
   console.log("✅ Attendance records created");
 
   // ─── Create Payments ───────────────────────────────────────────
-  const paymentStatuses = ["PAID", "PENDING", "PENDING", "OVERDUE", "PAID"];
+  const paymentStatuses = ["PENDING", "PAID", "PENDING", "OVERDUE", "PAID", "PENDING"];
 
   for (let i = 0; i < students.length; i++) {
     const dueDate = new Date();

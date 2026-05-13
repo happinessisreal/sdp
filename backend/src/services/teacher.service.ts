@@ -1,7 +1,45 @@
 import { prisma } from "../db/index.js";
-import { NotFoundError } from "../utils/errors.js";
+import { hashPassword } from "../utils/password.js";
+import { ConflictError, NotFoundError } from "../utils/errors.js";
+import type { CreateTeacherInput, UpdateTeacherInput } from "../validators/teacher.validator.js";
 
 export class TeacherService {
+  async create(data: CreateTeacherInput) {
+    const existing = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (existing) {
+      throw new ConflictError("A user with this email already exists");
+    }
+
+    const hashedPassword = await hashPassword(data.password);
+
+    return prisma.user.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        password: hashedPassword,
+        role: "TEACHER",
+        teacher: { create: {} },
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        created_at: true,
+        teacher: {
+          include: {
+            _count: {
+              select: { classes: true, payments: true },
+            },
+          },
+        },
+      },
+    });
+  }
+
   /**
    * List all teachers.
    */
@@ -84,6 +122,41 @@ export class TeacherService {
 
     if (!teacher) throw new NotFoundError("Teacher");
     return teacher;
+  }
+
+  async update(id: number, data: UpdateTeacherInput) {
+    const teacher = await prisma.teacher.findUnique({ where: { id } });
+    if (!teacher) throw new NotFoundError("Teacher");
+
+    if (data.name) {
+      await prisma.user.update({
+        where: { id: teacher.user_id },
+        data: { name: data.name },
+      });
+    }
+
+    return prisma.teacher.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true, created_at: true },
+        },
+        _count: {
+          select: { classes: true, payments: true },
+        },
+      },
+    });
+  }
+
+  async delete(id: number) {
+    const teacher = await prisma.teacher.findUnique({ where: { id } });
+    if (!teacher) throw new NotFoundError("Teacher");
+
+    await prisma.user.delete({
+      where: { id: teacher.user_id },
+    });
+
+    return { message: "Teacher deleted successfully" };
   }
 }
 

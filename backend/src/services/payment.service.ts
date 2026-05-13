@@ -1,5 +1,5 @@
 import { prisma } from "../db/index.js";
-import { NotFoundError } from "../utils/errors.js";
+import { ConflictError, NotFoundError } from "../utils/errors.js";
 import type { CreatePaymentInput, UpdatePaymentInput } from "../validators/payment.validator.js";
 
 export class PaymentService {
@@ -7,8 +7,15 @@ export class PaymentService {
     const student = await prisma.student.findUnique({ where: { id: data.student_id } });
     if (!student) throw new NotFoundError("Student");
 
-    const cls = await prisma.class.findUnique({ where: { id: data.class_id } });
+    const cls = await prisma.class.findUnique({
+      where: { id: data.class_id },
+      include: { enrollments: { where: { student_id: data.student_id } } },
+    });
     if (!cls) throw new NotFoundError("Class");
+    if (cls.teacher_id !== teacherId) throw new NotFoundError("Class for this teacher");
+    if (cls.enrollments.length === 0) {
+      throw new ConflictError("Student must be enrolled in the class before creating a payment");
+    }
 
     return prisma.payment.create({
       data: {

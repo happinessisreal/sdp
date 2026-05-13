@@ -1,17 +1,27 @@
 import { prisma } from "../db/index.js";
-import { NotFoundError, ForbiddenError } from "../utils/errors.js";
+import { AppError, NotFoundError, ForbiddenError } from "../utils/errors.js";
 import type { CreateClassInput, UpdateClassInput } from "../validators/class.validator.js";
 
 export class ClassService {
   /**
    * Create a new class for a teacher.
    */
-  async create(teacherUserId: number, data: CreateClassInput) {
-    const teacher = await prisma.teacher.findUnique({
-      where: { user_id: teacherUserId },
-    });
+  async create(userId: number, userRole: string, data: CreateClassInput) {
+    const teacher =
+      userRole === "ADMIN"
+        ? data.teacher_id
+          ? await prisma.teacher.findUnique({ where: { id: data.teacher_id } })
+          : null
+        : await prisma.teacher.findUnique({
+            where: { user_id: userId },
+          });
 
-    if (!teacher) throw new NotFoundError("Teacher profile");
+    if (!teacher) {
+      if (userRole === "ADMIN" && !data.teacher_id) {
+        throw new AppError("teacher_id is required when an admin creates a class", 400);
+      }
+      throw new NotFoundError("Teacher profile");
+    }
 
     const newClass = await prisma.class.create({
       data: {
@@ -39,6 +49,7 @@ export class ClassService {
     limit?: number;
     search?: string | undefined;
     teacherId?: number | undefined;
+    studentId?: number | undefined;
   }) {
     const page = params.page || 1;
     const limit = params.limit || 20;
@@ -48,6 +59,12 @@ export class ClassService {
 
     if (params.teacherId) {
       where.teacher_id = params.teacherId;
+    }
+
+    if (params.studentId) {
+      where.enrollments = {
+        some: { student_id: params.studentId },
+      };
     }
 
     if (params.search) {

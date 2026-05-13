@@ -124,6 +124,9 @@ Components that define the structure of the pages.
 #### Pages (`/src/pages`)
 These are the top-level View components that correspond directly to React Router paths. They orchestrate data fetching and render layout/UI components.
 - `Login.tsx`: The authentication page containing the login form.
-- `Dashboard.tsx`: The main landing page after login, displaying high-level metrics, recent activities, or charts.
-- `Students.tsx`: The page dedicated to listing, adding, and managing students.
-- *(Placeholders exist in App.tsx for future pages like `Teachers.tsx`, `Classes.tsx`, `Attendance.tsx`, and `Payments.tsx`)*.
+- `Dashboard.tsx`: The main landing page after login, displaying role-based metrics and recent activity.
+- `Students.tsx`: The page dedicated to listing, adding, editing, and deleting student records.
+- `Teachers.tsx`: Admin page for creating and managing teacher accounts.
+- `Classes.tsx`: Class scheduling and enrollment management for admins and teachers, with student read-only class access.
+- `Attendance.tsx`: Attendance recording for admins/teachers and attendance history for students.
+- `Payments.tsx`: Fee creation, payment status tracking, summaries, and student fee history.

@@ -4,8 +4,13 @@ import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { AppLayout } from "./components/layout/AppLayout";
 import { AuthLayout } from "./components/layout/AuthLayout";
 import { Login } from "./pages/Login";
+import { Register } from "./pages/Register";
 import { Dashboard } from "./pages/Dashboard";
 import { Students } from "./pages/Students";
+import { Teachers } from "./pages/Teachers";
+import { Classes } from "./pages/Classes";
+import { Attendance } from "./pages/Attendance";
+import { Payments } from "./pages/Payments";
 
 export default function App() {
   return (
@@ -16,6 +21,7 @@ export default function App() {
             {/* Public Routes */}
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
             </Route>
 
             {/* Protected Routes */}
@@ -23,12 +29,11 @@ export default function App() {
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               
-              {/* Placeholders for other routes */}
               <Route path="/students" element={<Students />} />
-              <Route path="/teachers" element={<div className="p-4"><h1 className="text-2xl font-bold">Teachers</h1><p className="text-surface-600">Coming soon.</p></div>} />
-              <Route path="/classes" element={<div className="p-4"><h1 className="text-2xl font-bold">Classes</h1><p className="text-surface-600">Coming soon.</p></div>} />
-              <Route path="/attendance" element={<div className="p-4"><h1 className="text-2xl font-bold">Attendance</h1><p className="text-surface-600">Coming soon.</p></div>} />
-              <Route path="/payments" element={<div className="p-4"><h1 className="text-2xl font-bold">Payments</h1><p className="text-surface-600">Coming soon.</p></div>} />
+              <Route path="/teachers" element={<Teachers />} />
+              <Route path="/classes" element={<Classes />} />
+              <Route path="/attendance" element={<Attendance />} />
+              <Route path="/payments" element={<Payments />} />
             </Route>
 
             {/* Catch all */}

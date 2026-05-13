@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { studentService } from "../services/student.service.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { requireRole } from "../middleware/rbac.middleware.js";
-import { updateStudentSchema } from "../validators/student.validator.js";
+import { createStudentSchema, updateStudentSchema } from "../validators/student.validator.js";
 import { successResponse, paginatedResponse } from "../middleware/error.middleware.js";
 import type { AppVariables } from "../types/index.js";
 
@@ -10,6 +10,14 @@ const students = new Hono<AppVariables>();
 
 // All routes require authentication
 students.use("*", authMiddleware);
+
+// POST /api/students
+students.post("/", requireRole("ADMIN", "TEACHER"), async (c) => {
+  const body = await c.req.json();
+  const data = createStudentSchema.parse(body);
+  const student = await studentService.create(data);
+  return successResponse(c, student, "Student created", 201);
+});
 
 // GET /api/students
 students.get("/", requireRole("ADMIN", "TEACHER"), async (c) => {

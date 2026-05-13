@@ -1,18 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { api } from "../api/client";
-
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: "ADMIN" | "TEACHER" | "STUDENT";
-  created_at: string;
-}
+import type { AuthUser } from "@/types/api";
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
-  login: (token: string, user: User) => void;
+  login: (token: string, user: AuthUser) => void;
   logout: () => void;
   refetchUser: () => Promise<void>;
 }
@@ -20,7 +13,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {
@@ -49,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void fetchUser();
   }, []);
 
-  const login = (token: string, userData: User) => {
+  const login = (token: string, userData: AuthUser) => {
     localStorage.setItem("token", token);
     setUser(userData);
   };

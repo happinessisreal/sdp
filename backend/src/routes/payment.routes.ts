@@ -5,7 +5,7 @@ import { requireRole } from "../middleware/rbac.middleware.js";
 import { createPaymentSchema, updatePaymentSchema } from "../validators/payment.validator.js";
 import { successResponse, paginatedResponse } from "../middleware/error.middleware.js";
 import { prisma } from "../db/index.js";
-import { NotFoundError } from "../utils/errors.js";
+import { ForbiddenError, NotFoundError } from "../utils/errors.js";
 import type { AppVariables } from "../types/index.js";
 
 const payments = new Hono<AppVariables>();
@@ -18,10 +18,20 @@ payments.post("/", requireRole("ADMIN", "TEACHER"), async (c) => {
   const body = await c.req.json();
   const data = createPaymentSchema.parse(body);
 
-  const teacher = await prisma.teacher.findUnique({ where: { user_id: user.userId } });
-  if (!teacher) throw new NotFoundError("Teacher profile");
+  const cls = await prisma.class.findUnique({ where: { id: data.class_id } });
+  if (!cls) throw new NotFoundError("Class");
 
-  const payment = await paymentService.create(data, teacher.id);
+  let teacherId = cls.teacher_id;
+  if (user.role === "TEACHER") {
+    const teacher = await prisma.teacher.findUnique({ where: { user_id: user.userId } });
+    if (!teacher) throw new NotFoundError("Teacher profile");
+    if (teacher.id !== cls.teacher_id) {
+      throw new ForbiddenError("You can only create payments for your own classes");
+    }
+    teacherId = teacher.id;
+  }
+
+  const payment = await paymentService.create(data, teacherId);
   return successResponse(c, payment, "Payment created", 201);
 });
 
@@ -32,14 +42,21 @@ payments.get("/", async (c) => {
   const limit = Number(c.req.query("limit")) || 20;
   const studentIdParam = c.req.query("studentId");
   const classIdParam = c.req.query("classId");
-  const studentId = studentIdParam ? Number(studentIdParam) : undefined;
+  let studentId = studentIdParam ? Number(studentIdParam) : undefined;
   const classId = classIdParam ? Number(classIdParam) : undefined;
   const status = c.req.query("status");
 
   let teacherId: number | undefined;
   if (user.role === "TEACHER") {
     const teacher = await prisma.teacher.findUnique({ where: { user_id: user.userId } });
+    if (!teacher) throw new NotFoundError("Teacher profile");
     teacherId = teacher?.id;
+  }
+
+  if (user.role === "STUDENT") {
+    const student = await prisma.student.findUnique({ where: { user_id: user.userId } });
+    if (!student) throw new NotFoundError("Student profile");
+    studentId = student?.id;
   }
 
   const result = await paymentService.list({ page, limit, studentId, classId, status, teacherId });

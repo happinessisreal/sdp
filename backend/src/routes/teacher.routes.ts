@@ -3,11 +3,20 @@ import { teacherService } from "../services/teacher.service.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { requireRole } from "../middleware/rbac.middleware.js";
 import { successResponse, paginatedResponse } from "../middleware/error.middleware.js";
+import { createTeacherSchema, updateTeacherSchema } from "../validators/teacher.validator.js";
 import type { AppVariables } from "../types/index.js";
 
 const teachers = new Hono<AppVariables>();
 
 teachers.use("*", authMiddleware);
+
+// POST /api/teachers
+teachers.post("/", requireRole("ADMIN"), async (c) => {
+  const body = await c.req.json();
+  const data = createTeacherSchema.parse(body);
+  const teacher = await teacherService.create(data);
+  return successResponse(c, teacher, "Teacher created", 201);
+});
 
 // GET /api/teachers
 teachers.get("/", requireRole("ADMIN"), async (c) => {
@@ -26,6 +35,22 @@ teachers.get("/:id", async (c) => {
   const id = Number(c.req.param("id"));
   const teacher = await teacherService.getById(id);
   return successResponse(c, teacher);
+});
+
+// PUT /api/teachers/:id
+teachers.put("/:id", requireRole("ADMIN"), async (c) => {
+  const id = Number(c.req.param("id"));
+  const body = await c.req.json();
+  const data = updateTeacherSchema.parse(body);
+  const teacher = await teacherService.update(id, data);
+  return successResponse(c, teacher, "Teacher updated");
+});
+
+// DELETE /api/teachers/:id
+teachers.delete("/:id", requireRole("ADMIN"), async (c) => {
+  const id = Number(c.req.param("id"));
+  const result = await teacherService.delete(id);
+  return successResponse(c, result);
 });
 
 export default teachers;
